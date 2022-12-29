@@ -22,7 +22,7 @@ jobs:
         with:
           cli_config_credentials_token: ${{ secrets.TF_MODULE_DEVELOPMENT }}
 
-      - name: Assume AWS Role in Testing Account
+      - name: Assume AWS Role
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::238080251717:role/ghatesting-sandbox
