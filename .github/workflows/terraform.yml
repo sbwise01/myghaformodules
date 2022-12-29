@@ -14,6 +14,11 @@ jobs:
           - test-a
           - test-b
     steps:
+      - name: Setup GHA requirements
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
       - name: Checkout
         uses: actions/checkout@v3
 
