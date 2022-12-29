@@ -13,6 +13,8 @@ jobs:
         path:
           - test-a
           - test-b
+    env:
+      TF_TOKEN_app_terraform_io: ${{ secrets.TFC_TOKEN }}
     steps:
       - name: Setup GHA requirements
         uses: actions/setup-node@v2
@@ -22,10 +24,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Terraform
+      # Note:  if you use Terraform version 1.2.0 or greater, no need to do this
+      # setup or teardown step as the env variable is supported
+      - name: Setup Terraform Cloud Authn
+        id: setupterraform
+        working-directory: ./tests/${{ matrix.path }}
+        run: ../../.github/scripts/setup_terraform.sh
+
+      - name: Setup Terraform Version
         uses: hashicorp/setup-terraform@v1
         with:
+          # Note:  cli_config_credentials_token doesn't locate .terraformrc in
+          # the correct path for terraform cli to find it
           cli_config_credentials_token: ${{ secrets.TFC_TOKEN }}
+          terraform_version: 1.1.0
 
       - name: Assume AWS Role
         uses: aws-actions/configure-aws-credentials@v1
@@ -44,6 +56,11 @@ jobs:
         continue-on-error: true
         working-directory: ./tests/${{ matrix.path }}
         run: terraform plan -no-color -input=false
+
+      - name: Teardown Terraform
+        id: teardownterraform
+        working-directory: ./tests/${{ matrix.path }}
+        run: rm -f ~/.terraformrc
 
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
